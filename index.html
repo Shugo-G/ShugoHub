@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ShugoHub · TV Dashboard</title>
+<meta name="viewport" content="width=1920">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0a0e13;
+  --bg-2:      #0f141b;
+  --panel:     #131923;
+  --panel-2:   #181f2b;
+  --border:    #1f2735;
+  --border-2:  #2a3445;
+  --ink:       #e6ebf2;
+  --ink-2:     #aab4c4;
+  --ink-3:     #6b7689;
+  --ink-4:     #424c5d;
+  --accent:    oklch(0.78 0.12 200);
+  --ok:        oklch(0.78 0.16 155);
+  --warn:      oklch(0.82 0.16 85);
+  --crit:      oklch(0.68 0.20 25);
+  --info:      oklch(0.75 0.10 250);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Inter", -apple-system, system-ui, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+.mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+
+/* ============ Stage ============ */
+.stage-wrap {
+  position: fixed; inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+.stage {
+  width: 1920px; height: 1080px;
+  position: absolute; top: 0; left: 0;
+  transform-origin: 0 0;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(56, 189, 248, 0.04), transparent 60%),
+    radial-gradient(1000px 500px at 10% 110%, rgba(56, 189, 248, 0.03), transparent 60%),
+    var(--bg);
+  display: grid;
+  grid-template-rows: 64px 110px 1fr 28px;
+  gap: 14px;
+  padding: 6px 8px 6px;
+  position: relative;
+}
+
+/* ============ Top bar ============ */
+.topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark {
+  width: 40px; height: 40px;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  display: grid; place-items: center;
+  background: linear-gradient(180deg, #18202c, #0f141b);
+  position: relative;
+}
+.brand-mark::before {
+  content: ""; position: absolute; inset: 7px;
+  border: 1.5px solid var(--accent);
+  border-radius: 4px; opacity: 0.9;
+}
+.brand-mark::after {
+  content: ""; position: absolute;
+  width: 8px; height: 8px;
+  background: var(--accent); border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1; }
+.brand-name { font-size: 18px; font-weight: 700; letter-spacing: 0.18em; color: var(--ink); }
+.brand-sub  { font-size: 11px; letter-spacing: 0.22em; color: var(--ink-3); margin-top: 6px; text-transform: uppercase; }
+.brand-dot  { color: var(--accent); }
+
+.clock-block { display: flex; align-items: baseline; gap: 18px; justify-content: center; }
+.clock-time  { font-size: 32px; font-weight: 600; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.clock-secs  { font-size: 20px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.clock-date  { font-size: 12px; letter-spacing: 0.18em; color: var(--ink-3); text-transform: uppercase; }
+
+.topbar-right { display: flex; align-items: center; gap: 14px; justify-content: flex-end; }
+.live-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 12px; border-radius: 999px;
+  border: 1px solid var(--border-2);
+  background: rgba(20, 27, 38, 0.6);
+  font-size: 11px; letter-spacing: 0.22em;
+  color: var(--ink-2); text-transform: uppercase;
+}
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ok); box-shadow: 0 0 10px var(--ok);
+  animation: pulse 2s infinite ease-in-out;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* ============ Radio card ============ */
+.radio {
+  display: grid; grid-template-columns: auto 1fr auto;
+  align-items: center; gap: 12px; width: 320px;
+  padding: 8px 12px;
+  background: rgba(20, 27, 38, 0.55);
+  border: 1px solid var(--border); border-radius: 10px;
+}
+.radio-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--border-2); background: var(--panel-2);
+  color: var(--ink); display: grid; place-items: center;
+  cursor: pointer; transition: all 0.15s;
+}
+.radio-btn:hover { border-color: var(--accent); color: var(--accent); }
+.radio-btn.playing { border-color: var(--accent); color: var(--accent); }
+.radio-meta { display: flex; flex-direction: column; min-width: 0; }
+.radio-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.radio-genre { font-size: 10px; letter-spacing: 0.18em; color: var(--ink-3); text-transform: uppercase; margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+.radio-eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 9px; margin-left: 2px; }
+.radio-eq span { width: 2px; background: var(--accent); border-radius: 1px; animation: eq 0.9s infinite ease-in-out; }
+.radio-eq span:nth-child(1) { height: 60%; animation-delay: 0.0s; }
+.radio-eq span:nth-child(2) { height: 100%; animation-delay: 0.2s; }
+.radio-eq span:nth-child(3) { height: 40%; animation-delay: 0.4s; }
+.radio-eq span:nth-child(4) { height: 80%; animation-delay: 0.1s; }
+@keyframes eq { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+.radio-vol { display: flex; align-items: center; gap: 6px; }
+.radio-vol input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 70px; height: 3px; background: var(--border-2); border-radius: 2px; outline: none;
+}
+.radio-vol input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 11px; height: 11px; border-radius: 50%; background: var(--ink-2); cursor: pointer;
+}
+.radio-vol input[type="range"]::-moz-range-thumb {
+  width: 11px; height: 11px; border-radius: 50%; background: var(--ink-2); border: none; cursor: pointer;
+}
+.radio-station-select {
+  background: transparent; border: none; color: var(--ink-3);
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  cursor: pointer; padding: 2px 4px; font-family: inherit;
+}
+.radio-station-select:hover { color: var(--accent); }
+.radio-station-select option { background: var(--panel); color: var(--ink); }
+
+/* ============ KPI strip ============ */
+.kpis { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; }
+.kpi {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  position: relative; overflow: hidden;
+}
+.kpi-label { font-size: 10px; letter-spacing: 0.22em; color: var(--ink-3); text-transform: uppercase; }
+.kpi-row   { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.kpi-val   { font-size: 32px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi-hint  { position: absolute; right: 14px; top: 14px; font-size: 10px; letter-spacing: 0.18em; color: var(--ink-4); text-transform: uppercase; }
+.kpi.ok    .kpi-val { color: var(--ok); }
+.kpi.warn  .kpi-val { color: var(--warn); }
+.kpi.crit  .kpi-val { color: var(--crit); }
+.kpi.info  .kpi-val { color: var(--info); }
+.kpi.muted .kpi-val { color: var(--ink); }
+
+/* ============ Main panels ============ */
+.main {
+  display: grid;
+  grid-template-columns: var(--split-left, 1fr) 6px var(--split-right, 1fr);
+  gap: 0; min-height: 0;
+}
+.main > .panel:first-child { margin-right: 7px; }
+.main > .panel:last-child  { margin-left: 7px; }
+
+.split-handle {
+  position: relative; cursor: col-resize;
+  display: grid; place-items: center;
+  align-self: stretch; user-select: none; touch-action: none;
+}
+.split-handle::before {
+  content: ""; width: 2px; height: 100%;
+  background: var(--border); border-radius: 2px; transition: background 0.15s;
+}
+.split-handle:hover::before, .split-handle.dragging::before {
+  background: var(--accent); box-shadow: 0 0 10px var(--accent);
+}
+.split-handle .grip {
+  position: absolute; width: 14px; height: 38px;
+  border-radius: 8px; background: var(--panel-2);
+  border: 1px solid var(--border-2);
+  display: grid; place-items: center; gap: 2px;
+  color: var(--ink-3); transition: border-color 0.15s, color 0.15s;
+}
+.split-handle:hover .grip, .split-handle.dragging .grip { border-color: var(--accent); color: var(--accent); }
+.split-handle .grip i { display: block; width: 2px; height: 2px; background: currentColor; border-radius: 50%; }
+
+.panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; display: flex; flex-direction: column;
+  min-height: 0; overflow: hidden;
+}
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 10px; border-bottom: 1px solid var(--border);
+}
+.panel-title {
+  font-size: 12px; letter-spacing: 0.28em;
+  color: var(--ink-2); text-transform: uppercase; font-weight: 600;
+  display: flex; align-items: center; gap: 12px;
+}
+.panel-title .accent-bar { width: 4px; height: 14px; background: var(--accent); border-radius: 2px; }
+.panel-meta {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 11px; letter-spacing: 0.14em;
+  color: var(--ink-3); text-transform: uppercase;
+}
+.panel-meta b { color: var(--ink); font-weight: 600; }
+.panel-body { flex: 1; min-height: 0; padding: 12px 14px; overflow: hidden; }
+.panel-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border: 1px solid var(--border-2); border-radius: 6px;
+  font-size: 10px; letter-spacing: 0.18em; color: var(--ink-2);
+  text-transform: uppercase; text-decoration: none;
+  background: rgba(20, 27, 38, 0.6); transition: all 0.15s; font-weight: 600;
+}
+.panel-link:hover { border-color: var(--accent); color: var(--accent); }
+.panel-link svg { width: 11px; height: 11px; }
+
+/* ============ VM cards (compact) ============ */
+.vm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--vm-min, 280px), 1fr));
+  grid-auto-rows: 104px;
+  gap: 10px; height: 100%; align-content: start;
+}
+.vm {
+  background: linear-gradient(180deg, var(--panel-2) 0%, #131a25 100%);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; display: grid;
+  grid-template-columns: 64px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 14px; row-gap: 6px;
+  align-items: center; position: relative; overflow: hidden;
+}
+.vm::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--ok); box-shadow: 0 0 10px currentColor;
+}
+.vm.warn::before    { background: var(--warn); color: var(--warn); }
+.vm.crit::before    { background: var(--crit); color: var(--crit); }
+.vm.offline::before { background: var(--ink-4); color: var(--ink-4); }
+
+.vm-dial { grid-row: 1 / span 2; width: 64px; height: 64px; display: grid; place-items: center; position: relative; }
+.vm-dial svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.vm-dial-val   { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.vm-dial-suf   { font-size: 10px; color: var(--ink-3); margin-left: 1px; }
+.vm-dial-label { position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); font-size: 7.5px; letter-spacing: 0.22em; color: var(--ink-4); }
+
+.vm-head { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.vm-name { font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
+.vm-ip   { font-size: 10.5px; color: var(--ink-3); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
+
+.vm-status { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; grid-column: 3; grid-row: 1 / span 2; justify-content: center; }
+.vm-bars   { display: grid; gap: 4px; min-width: 0; }
+.vm-bar-row {
+  display: grid; grid-template-columns: 28px 1fr 40px;
+  align-items: center; gap: 8px;
+}
+.vm-bar-label { font-size: 8.5px; letter-spacing: 0.18em; color: var(--ink-3); text-transform: uppercase; font-weight: 600; }
+.vm-bar       { height: 4px; background: var(--border-2); border-radius: 3px; overflow: hidden; }
+.vm-bar-fill  { height: 100%; background: var(--ok); border-radius: 3px; transition: width 0.4s ease; }
+.vm-bar-fill.warn { background: var(--warn); }
+.vm-bar-fill.crit { background: var(--crit); }
+.vm-bar-val   { font-size: 10px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+
+.vm-conn {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 10px var(--ok), 0 0 0 2px rgba(46, 213, 115, 0.12);
+}
+.vm-conn.off {
+  background: var(--crit);
+  box-shadow: 0 0 10px var(--crit), 0 0 0 2px rgba(255, 80, 80, 0.12);
+}
+
+/* ============ Clock list ============ */
+.clock-table { width: 100%; height: 100%; display: flex; flex-direction: column; font-size: 12px; }
+.clock-table-head {
+  display: grid; grid-template-columns: 16px 1.6fr 1.9fr 90px 90px;
+  gap: 10px; padding: 6px 10px 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 9px; letter-spacing: 0.22em; color: var(--ink-4); text-transform: uppercase;
+}
+.clock-table-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.clock-row {
+  display: grid; grid-template-columns: 16px 1.6fr 1.9fr 90px 90px;
+  gap: 10px; align-items: center;
+  padding: 0 10px; flex: 1; min-height: 0;
+  border-bottom: 1px solid rgba(31, 39, 53, 0.6);
+  position: relative; transition: background 0.15s;
+}
+.clock-row:hover { background: rgba(56, 189, 248, 0.04); }
+.clock-row:last-child { border-bottom: none; }
+.clock-row .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px currentColor; color: var(--ok); }
+.clock-row.err   .dot { background: var(--crit); color: var(--crit); }
+.clock-row.stale .dot { background: var(--warn); color: var(--warn); }
+.clock-row .name  { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.01em; }
+.clock-row .ip    { font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.clock-row .idadm { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.clock-row .idadm-pref { color: var(--ink-4); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; margin-right: 4px; }
+.clock-row .last  { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* ============ Footer ============ */
+.foot {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 6px; font-size: 10px; letter-spacing: 0.2em;
+  color: var(--ink-4); text-transform: uppercase;
+}
+.foot .right { display: flex; gap: 20px; }
+.cycle { display: inline-flex; align-items: center; gap: 8px; }
+.cycle-tick { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+
+/* density */
+body.dense .vm  { padding: 10px 12px; }
+body.dense .kpi { padding: 11px 14px; }
+body.dense .kpi-val { font-size: 28px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- ── Tweaks panel shell ───────────────────────────────────────────────── -->
+<script type="text/babel">
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+`;
+
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    offsetRef.current = {
+      x: Math.min(Math.max(PAD, window.innerWidth - w - PAD), Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(Math.max(PAD, window.innerHeight - h - PAD), Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right  = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd">
+          <b>{title}</b>
+          <button className="twk-x" onClick={() => { setOpen(false); window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); }}>✕</button>
+        </div>
+        <div className="twk-body">{children}</div>
+      </div>
+    </>
+  );
+}
+
+function TweakSection({ title, children }) { return (<><div className="twk-sect">{title}</div>{children}</>); }
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl"><span>{label}</span>{value != null && <span className="twk-val">{value}</span>}</div>
+      {children}
+    </div>
+  );
+}
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'} onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+function TweakText({ label, value, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => { const v = typeof o === 'object' ? o.value : o; const l = typeof o === 'object' ? o.label : o; return <option key={v} value={v}>{l}</option>; })}
+      </select>
+    </TweakRow>
+  );
+}
+
+Object.assign(window, { useTweaks, TweaksPanel, TweakSection, TweakRow, TweakSlider, TweakToggle, TweakText, TweakSelect });
+</script>
+
+<!-- ── Data: mock fallback + normalizers + radio ───────────────────────── -->
+<script type="text/babel">
+const VMS_MOCK = [
+  { name: "ubuntu26",        ip: "192.168.0.152",    cpu: 0.0,  ram: 11.1, disk: 57.3, status: "online", warn: 1,   crit: 0 },
+  { name: "proxy-nginx",     ip: "192.168.0.12",     cpu: 0.5,  ram: 17.3, disk: 19.5, status: "online", warn: 10,  crit: 0 },
+  { name: "cloud",           ip: "192.168.0.5",      cpu: 0.0,  ram: 6.9,  disk: 62.7, status: "online", warn: 84,  crit: 0 },
+  { name: "LEXDOCTOR",       ip: "192.168.100.199",  cpu: 1.5,  ram: 18.4, disk: 54.4, status: "online", warn: 0,   crit: 0 },
+  { name: "WS-TOLHUIN",      ip: "192.168.90.170",   cpu: 0.8,  ram: 14.6, disk: 88.9, status: "warn",   warn: 0,   crit: 0 },
+  { name: "sisa500gb",       ip: "192.168.90.213",   cpu: 0.4,  ram: 19.1, disk: 43.6, status: "online", warn: 17,  crit: 0 },
+  { name: "roundcube",       ip: "192.168.0.9",      cpu: 0.0,  ram: 19.0, disk: 16.8, status: "online", warn: 92,  crit: 0 },
+  { name: "dockerproducci",  ip: "192.168.0.14",     cpu: 16,   ram: 16.6, disk: 70.6, status: "online", warn: 102, crit: 0 },
+  { name: "CRONOS XXI",      ip: "192.168.0.11",     cpu: 16,   ram: 41.6, disk: 83.6, status: "warn",   warn: 0,   crit: 0 },
+  { name: "serverdev-VM",    ip: "192.168.0.106",    cpu: 0.0,  ram: 8.0,  disk: 52.4, status: "online", warn: 2,   crit: 0 },
+];
+
+const CLOCKS_MOCK = [
+  { name: "BG-PLTA-USH",   ip: "181.118.101.156:4371", idadm: 151, last: "11:30:01", status: "ok" },
+  { name: "CAMPOS-133",    ip: "192.168.1.201:4370",   idadm: 4,   last: "11:30:02", status: "ok" },
+  { name: "COB-MORA-USH",  ip: "192.168.150.102:4370", idadm: 3,   last: "11:30:03", status: "ok" },
+  { name: "COM-TOL",       ip: "38.224.63.252:4370",   idadm: 1,   last: "11:30:07", status: "ok" },
+  { name: "DOT-USH",       ip: "192.168.150.101:4370", idadm: 101, last: "11:30:07", status: "ok" },
+  { name: "INFORMAT-USH",  ip: "192.168.0.22:4370",    idadm: 8,   last: "11:30:10", status: "ok" },
+  { name: "PGB-ADM-USH",   ip: "181.118.101.156:4370", idadm: 150, last: "11:30:11", status: "ok" },
+  { name: "PP-TOL",        ip: "38.224.63.253:4370",   idadm: 6,   last: "11:30:13", status: "ok" },
+  { name: "PP1-DOT-USH",   ip: "181.118.69.20:4372",   idadm: 102, last: "11:30:14", status: "ok" },
+  { name: "PP1-PANOL-USH", ip: "181.118.69.20:4373",   idadm: 113, last: "11:30:16", status: "ok" },
+  { name: "PP1-REDES-USH", ip: "181.118.69.20:4370",   idadm: 111, last: "11:30:18", status: "ok" },
+  { name: "PP2-LAB-USH",   ip: "181.118.69.217:4372",  idadm: 202, last: "11:30:19", status: "ok" },
+  { name: "PP2-OFIC-USH",  ip: "181.118.69.217:4370",  idadm: 201, last: "11:30:20", status: "ok" },
+  { name: "PP2-PLTA-USH",  ip: "181.118.69.217:4371",  idadm: 203, last: "11:30:22", status: "ok" },
+  { name: "PP3-USH",       ip: "181.118.69.18:555",    idadm: 103, last: "11:30:23", status: "ok" },
+  { name: "PP4-USH",       ip: "179.62.73.126:4370",   idadm: 104, last: "11:30:25", status: "ok" },
+  { name: "REDES-TOL",     ip: "38.224.63.254:4370",   idadm: 2,   last: "11:30:26", status: "ok" },
+];
+
+const RADIO_STATIONS = [
+  { name: "FM Aspen 102.3",  genre: "clásica · pop", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/ASPEN.mp3" },
+  { name: "Groove Salad",    genre: "ambient", url: "https://ice2.somafm.com/groovesalad-128-mp3" },
+  { name: "Drone Zone",      genre: "ambient", url: "https://ice2.somafm.com/dronezone-128-mp3" },
+  { name: "Lush",            genre: "vocal",   url: "https://ice2.somafm.com/lush-128-mp3" },
+  { name: "Indie Pop Rocks", genre: "indie",   url: "https://ice2.somafm.com/indiepop-128-mp3" },
+  { name: "Bossa Beyond",    genre: "bossa",   url: "https://ice2.somafm.com/bossa-128-mp3" },
+];
+
+function normalizeVM(v) {
+  const s = v.latest_status || {};
+  const noData = !v.latest_status;
+  return {
+    name:   v.display_name || v.hostname || v.name || '?',
+    ip:     v.ip_address   || v.ip       || '',
+    cpu:    parseFloat(s.cpu_usage    ?? 0) || 0,
+    ram:    parseFloat(s.ram_percent  ?? 0) || 0,
+    disk:   parseFloat(s.disk_percent ?? 0) || 0,
+    status: noData ? 'offline' : (v.is_stale ? 'warn' : 'online'),
+    warn:   0,
+    crit:   0,
+  };
+}
+
+function normalizeClock(c) {
+  const raw = c.ultimo_ciclo_ok || c.last || '';
+  const last = raw.includes(' ') ? raw.split(' ')[1] : raw;
+  return {
+    name:   c.nombre  || c.name   || '?',
+    ip:     c.puerto  ? `${c.ip}:${c.puerto}` : (c.ip || ''),
+    idadm:  c.idadm   ?? '',
+    last,
+    status: (c.estado || c.status || 'ok').toLowerCase(),
+  };
+}
+
+Object.assign(window, { VMS_MOCK, CLOCKS_MOCK, RADIO_STATIONS, normalizeVM, normalizeClock });
+</script>
+
+<!-- ── App ────────────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+const API_VMS      = '/api/vms/';
+const API_HUB      = '/api/hub/';
+const POLL_VMS_MS  = 30_000;
+const POLL_HUB_MS  = 60_000;
+
+// ---------- Helpers ----------
+const pad2 = (n) => String(n).padStart(2, "0");
+const fmtTime = (d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+const fmtSec  = (d) => pad2(d.getSeconds());
+const fmtDate = (d) => {
+  const days   = ["DOM","LUN","MAR","MIE","JUE","VIE","SAB"];
+  const months = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+  return `${days[d.getDay()]} ${pad2(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()}`;
+};
+
+function useClock() {
+  const [t, setT] = useState(new Date());
+  useEffect(() => { const id = setInterval(() => setT(new Date()), 1000); return () => clearInterval(id); }, []);
+  return t;
+}
+
+// ---------- TopBar ----------
+function TopBar({ station, onStation, playing, onTogglePlay, vol, onVol }) {
+  const now = useClock();
+  return (
+    <div className="topbar">
+      <div className="brand">
+        <div className="brand-mark"></div>
+        <div className="brand-text">
+          <div className="brand-name">SHUGO<span className="brand-dot">·</span>HUB</div>
+          <div className="brand-sub">Operations Overview</div>
+        </div>
+      </div>
+      <div className="clock-block">
+        <div>
+          <span className="clock-time mono">{fmtTime(now)}</span>
+          <span className="clock-secs mono">:{fmtSec(now)}</span>
+        </div>
+        <div className="clock-date mono">{fmtDate(now)}</div>
+      </div>
+      <div className="topbar-right">
+        <div className="live-pill"><span className="live-dot"></span> En vivo</div>
+        <RadioCard station={station} onStation={onStation} playing={playing} onTogglePlay={onTogglePlay} vol={vol} onVol={onVol} />
+      </div>
+    </div>
+  );
+}
+
+// ---------- Radio ----------
+function RadioCard({ station, onStation, playing, onTogglePlay, vol, onVol }) {
+  return (
+    <div className="radio" title="Radio">
+      <button className={"radio-btn " + (playing ? "playing" : "")} onClick={onTogglePlay} aria-label={playing ? "Pausar" : "Reproducir"}>
+        {playing
+          ? <svg width="12" height="12" viewBox="0 0 12 12"><rect x="2" y="2" width="3" height="8" fill="currentColor"/><rect x="7" y="2" width="3" height="8" fill="currentColor"/></svg>
+          : <svg width="12" height="12" viewBox="0 0 12 12"><polygon points="3,2 10,6 3,10" fill="currentColor"/></svg>}
+      </button>
+      <div className="radio-meta">
+        <div className="radio-name">
+          <select className="radio-station-select" value={station.url}
+            onChange={(e) => { const s = window.RADIO_STATIONS.find(x => x.url === e.target.value); if (s) onStation(s); }}
+            style={{ color: "var(--ink)", fontSize: 12, fontWeight: 600 }}>
+            {window.RADIO_STATIONS.map(s => <option key={s.url} value={s.url}>{s.name}</option>)}
+          </select>
+        </div>
+        <div className="radio-genre">
+          {station.genre}
+          {playing && <span className="radio-eq"><span/><span/><span/><span/></span>}
+        </div>
+      </div>
+      <div className="radio-vol">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2" style={{ color: "var(--ink-3)" }}>
+          <path d="M2 4.5h2l3-2.5v8L4 7.5H2z" fill="currentColor"/>
+          <path d="M8.5 4c.6.6.6 3.4 0 4"/>
+        </svg>
+        <input type="range" min="0" max="100" value={vol} onChange={(e) => onVol(Number(e.target.value))} />
+      </div>
+    </div>
+  );
+}
+
+// ---------- KPIs ----------
+function Kpis({ vms, clocks, lastCycle, fichadas }) {
+  const onlineVms  = vms.filter(v => v.status === "online" || v.status === "warn").length;
+  const warnVms    = vms.filter(v => v.status === "warn").length;
+  const critVms    = vms.filter(v => v.status === "crit").length;
+  const totalWarns = vms.reduce((a, v) => a + (v.warn || 0), 0);
+  const okClocks   = clocks.filter(c => c.status === "ok").length;
+  const errClocks  = clocks.filter(c => c.status !== "ok").length;
+
+  const items = [
+    { label: "VMs ONLINE",   val: `${onlineVms}/${vms.length}`, tone: "ok",   hint: "Servidores" },
+    { label: "VMs WARN",     val: warnVms,   tone: warnVms  ? "warn" : "muted", hint: "Servidores" },
+    { label: "VMs CRIT",     val: critVms,   tone: critVms  ? "crit" : "muted", hint: "Servidores" },
+    { label: "Alertas",      val: totalWarns,tone: totalWarns > 50 ? "warn" : "info", hint: "Servidores" },
+    { label: "Relojes OK",   val: `${okClocks}/${clocks.length}`, tone: "ok", hint: "Relojes" },
+    { label: "Con error",    val: errClocks, tone: errClocks ? "crit" : "muted", hint: "Relojes" },
+    { label: "Último ciclo", val: lastCycle, tone: "info",   hint: "Relojes", small: true },
+    { label: "Fichadas",     val: fichadas,  tone: "muted",  hint: "Último ciclo" },
+  ];
+
+  return (
+    <div className="kpis">
+      {items.map((k, i) => (
+        <div key={i} className={"kpi " + k.tone}>
+          <div className="kpi-label">{k.label}</div>
+          <div className="kpi-hint">{k.hint}</div>
+          <div className="kpi-row">
+            <div className="kpi-val mono" style={k.small ? { fontSize: 20 } : null}>{k.val}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ---------- Splitter ----------
+function Splitter({ pct, onChange }) {
+  const [dragging, setDragging] = useState(false);
+  const ref = useRef(null);
+  const onDown = (e) => {
+    e.preventDefault();
+    setDragging(true);
+    const main = ref.current && ref.current.parentElement;
+    if (!main) return;
+    const move = (ev) => {
+      const rect = main.getBoundingClientRect();
+      const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left;
+      let p = Math.max(20, Math.min(80, Math.round((x / rect.width) * 100)));
+      onChange(p);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+    };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  };
+  return (
+    <div ref={ref} className={"split-handle " + (dragging ? "dragging" : "")}
+      onMouseDown={onDown} title="Arrastrar para redimensionar">
+      <div className="grip"><i></i><i></i><i></i></div>
+    </div>
+  );
+}
+
+// ---------- VM card ----------
+function VMCard({ vm }) {
+  const cpuTone  = vm.cpu  >= 80 ? "crit" : vm.cpu  >= 50 ? "warn" : "ok";
+  const ramTone  = vm.ram  >= 85 ? "crit" : vm.ram  >= 70 ? "warn" : "ok";
+  const diskTone = vm.disk >= 85 ? "crit" : vm.disk >= 70 ? "warn" : "ok";
+  const statusClass = vm.status === "warn" ? "warn" : vm.status === "crit" ? "crit" : vm.status === "offline" ? "offline" : "";
+  const dialR = 23, dialC = 2 * Math.PI * dialR;
+  const dialOff = dialC * (1 - Math.min(100, vm.cpu) / 100);
+
+  return (
+    <div className={"vm " + statusClass}>
+      <div className="vm-dial">
+        <svg width="56" height="56">
+          <circle cx="28" cy="28" r={dialR} fill="none" stroke="var(--border-2)" strokeWidth="3"/>
+          <circle cx="28" cy="28" r={dialR} fill="none" stroke={`var(--${cpuTone})`} strokeWidth="3"
+            strokeDasharray={dialC} strokeDashoffset={dialOff} strokeLinecap="round"/>
+        </svg>
+        <div>
+          <span className="vm-dial-val mono">{vm.cpu.toFixed ? vm.cpu.toFixed(1) : vm.cpu}</span>
+          <span className="vm-dial-suf mono">%</span>
+        </div>
+        <div className="vm-dial-label mono">CPU</div>
+      </div>
+      <div className="vm-head">
+        <div className="vm-name">{vm.name}</div>
+        <div className="vm-ip mono">{vm.ip}</div>
+      </div>
+      <div className="vm-status">
+        <span className={"vm-conn " + (vm.status === "offline" ? "off" : "")}
+          title={vm.status === "offline" ? "Sin conexión" : "Conectado"}></span>
+      </div>
+      <div className="vm-bars" style={{ gridColumn: "2", gridRow: "2" }}>
+        <div className="vm-bar-row">
+          <div className="vm-bar-label">RAM</div>
+          <div className="vm-bar"><div className={"vm-bar-fill " + ramTone} style={{ width: vm.ram + "%" }}/></div>
+          <div className="vm-bar-val mono">{(+vm.ram).toFixed(1)}%</div>
+        </div>
+        <div className="vm-bar-row">
+          <div className="vm-bar-label">DISK</div>
+          <div className="vm-bar"><div className={"vm-bar-fill " + diskTone} style={{ width: vm.disk + "%" }}/></div>
+          <div className="vm-bar-val mono">{(+vm.disk).toFixed(1)}%</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Clock row ----------
+function ClockRow({ c }) {
+  const cls = c.status === "ok" ? "" : c.status === "stale" ? "stale" : "err";
+  return (
+    <div className={"clock-row " + cls}>
+      <span className="dot"></span>
+      <div className="name">{c.name}</div>
+      <div className="ip mono">{c.ip}</div>
+      <div className="idadm"><span className="idadm-pref">idadm</span>{c.idadm}</div>
+      <div className="last mono">{c.last}</div>
+    </div>
+  );
+}
+
+// ---------- App ----------
+function App() {
+  const [t, setTweak] = window.useTweaks({
+    "dense":          false,
+    "stationUrl":     "https://playerservices.streamtheworld.com/api/livestream-redirect/ASPEN.mp3",
+    "shugoVisionUrl": "http://shugovision.dposs.gob.ar",
+    "shugoTimeUrl":   "http://relojes.dposs.gob.ar",
+    "splitPct":       67,
+    "vmMin":          260,
+  });
+
+  const audioRef = useRef(null);
+  const [playing, setPlaying] = useState(false);
+  const [vol, setVol]         = useState(100);
+
+  // -- live API data --
+  const [vms,      setVms]      = useState(window.VMS_MOCK);
+  const [clocks,   setClocks]   = useState(window.CLOCKS_MOCK);
+  const [lastFetch, setLastFetch]     = useState(null);
+  const [fichadas, setFichadas]       = useState(0);
+  const [lastCycleStr, setLastCycleStr] = useState(null);
+
+  // VMs: poll every 10s
+  useEffect(() => {
+    async function loadVMs() {
+      try {
+        const r = await fetch(API_VMS);
+        if (!r.ok) throw new Error(r.status);
+        const raw = await r.json();
+        const arr = Array.isArray(raw) ? raw : (raw.data || raw.vms || raw.results || []);
+        setVms(arr.map(window.normalizeVM));
+        setLastFetch(new Date());
+      } catch (e) {
+        console.warn('[ShugoHub] VMs fetch:', e.message);
+      }
+    }
+    loadVMs();
+    const id = setInterval(loadVMs, POLL_VMS_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  // Relojes: poll every 30s
+  useEffect(() => {
+    async function loadHub() {
+      try {
+        const r = await fetch(API_HUB);
+        if (!r.ok) throw new Error(r.status);
+        const raw = await r.json();
+        const arr = raw.relojes || (Array.isArray(raw) ? raw : (raw.data || raw.clocks || []));
+        setClocks(arr.map(window.normalizeClock));
+        if (raw.ultimo_ciclo_fichadas != null) setFichadas(raw.ultimo_ciclo_fichadas);
+        if (raw.ultimo_ciclo_inicio) {
+          const parts = raw.ultimo_ciclo_inicio.split(' ');
+          setLastCycleStr(parts[1] || raw.ultimo_ciclo_inicio);
+        }
+      } catch (e) {
+        console.warn('[ShugoHub] Hub fetch:', e.message);
+      }
+    }
+    loadHub();
+    const id = setInterval(loadHub, POLL_HUB_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  const lastCycle = lastCycleStr || (lastFetch
+    ? `${pad2(lastFetch.getHours())}:${pad2(lastFetch.getMinutes())}:${pad2(lastFetch.getSeconds())}`
+    : '…');
+
+  const station = useMemo(
+    () => window.RADIO_STATIONS.find(s => s.url === t.stationUrl) || window.RADIO_STATIONS[0],
+    [t.stationUrl]
+  );
+
+  useEffect(() => { if (audioRef.current) audioRef.current.volume = vol / 100; }, [vol]);
+  useEffect(() => {
+    if (!audioRef.current) return;
+    audioRef.current.src = station.url;
+    if (playing) audioRef.current.play().catch(() => setPlaying(false));
+  }, [station.url]);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (playing) { audioRef.current.pause(); setPlaying(false); }
+    else audioRef.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+  };
+
+  useEffect(() => { document.body.classList.toggle("dense", !!t.dense); }, [t.dense]);
+
+  // Stage scale-to-fill (independent X/Y so no black bars)
+  useEffect(() => {
+    const onResize = () => {
+      const stage = document.querySelector(".stage");
+      if (!stage) return;
+      stage.style.transform = `scale(${window.innerWidth / 1920}, ${window.innerHeight / 1080})`;
+    };
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return (
+    <div className="stage-wrap">
+      <audio ref={audioRef} preload="none" crossOrigin="anonymous"></audio>
+      <div className="stage">
+        <TopBar station={station} onStation={(s) => setTweak("stationUrl", s.url)}
+          playing={playing} onTogglePlay={togglePlay} vol={vol} onVol={setVol} />
+
+        <Kpis vms={vms} clocks={clocks} lastCycle={lastCycle} fichadas={fichadas} />
+
+        <div className="main" style={{
+          "--split-left":  `${t.splitPct}fr`,
+          "--split-right": `${100 - t.splitPct}fr`,
+          "--vm-min":      `${t.vmMin}px`,
+        }}>
+          {/* SERVIDORES */}
+          <div className="panel">
+            <div className="panel-head">
+              <div className="panel-title"><span className="accent-bar"></span>Servidores · ShugoVision</div>
+              <div className="panel-meta">
+                <span><b className="mono">{vms.length}</b> totales</span>
+                <span><b className="mono" style={{ color: "var(--ok)" }}>{vms.filter(v => v.status !== "offline").length}</b> online</span>
+                <span><b className="mono" style={{ color: "var(--warn)" }}>{vms.filter(v => v.status === "warn").length}</b> warn</span>
+                <a className="panel-link" href={t.shugoVisionUrl} target="_blank" rel="noopener noreferrer">
+                  Abrir <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 8l4-4M4.5 3.5H8.5V7.5"/></svg>
+                </a>
+              </div>
+            </div>
+            <div className="panel-body">
+              <div className="vm-grid">{vms.map(v => <VMCard key={v.name} vm={v} />)}</div>
+            </div>
+          </div>
+
+          <Splitter pct={t.splitPct} onChange={(v) => setTweak("splitPct", v)} />
+
+          {/* RELOJES */}
+          <div className="panel">
+            <div className="panel-head">
+              <div className="panel-title"><span className="accent-bar"></span>Relojes biométricos · ShugoTime</div>
+              <div className="panel-meta">
+                <span><b className="mono">{clocks.length}</b> activos</span>
+                <span><b className="mono" style={{ color: "var(--ok)" }}>{clocks.filter(c => c.status === "ok").length}</b> OK</span>
+                <span><b className="mono" style={{ color: "var(--crit)" }}>{clocks.filter(c => c.status !== "ok").length}</b> error</span>
+                <a className="panel-link" href={t.shugoTimeUrl} target="_blank" rel="noopener noreferrer">
+                  Abrir <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 8l4-4M4.5 3.5H8.5V7.5"/></svg>
+                </a>
+              </div>
+            </div>
+            <div className="panel-body" style={{ padding: "6px 8px" }}>
+              <div className="clock-table">
+                <div className="clock-table-head">
+                  <span></span><span>Reloj</span><span>Dirección</span><span>idadm</span><span>Último ciclo</span>
+                </div>
+                <div className="clock-table-body">
+                  {clocks.map(c => <ClockRow key={c.name} c={c} />)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="foot mono">
+          <div>SHUGOHUB · DPOSS · Ushuaia, Tierra del Fuego</div>
+          <div className="right">
+            <span className="cycle"><span className="cycle-tick"></span> VMs cada 30s · relojes cada 60s</span>
+            <span>auto-refresh activo</span>
+            <span>v2.0</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tweaks panel (activable desde design tool) */}
+      {React.createElement(TweaksPanel_UI)}
+    </div>
+  );
+}
+
+function TweaksPanel_UI() {
+  const [t, setTweak] = window.useTweaks({
+    "dense": false, "stationUrl": "https://ice2.somafm.com/groovesalad-128-mp3",
+    "shugoVisionUrl": "http://shugovision.dposs.gob.ar",
+    "shugoTimeUrl":   "http://relojes.dposs.gob.ar",
+    "splitPct": 67, "vmMin": 260,
+  });
+  const { TweaksPanel, TweakSection, TweakSlider, TweakToggle, TweakText, TweakSelect } = window;
+  if (!TweaksPanel) return null;
+  return (
+    <TweaksPanel title="Tweaks">
+      <TweakSection title="Accesos">
+        <TweakText label="ShugoVision URL" value={t.shugoVisionUrl} onChange={(v) => setTweak("shugoVisionUrl", v)} />
+        <TweakText label="ShugoTime URL"   value={t.shugoTimeUrl}   onChange={(v) => setTweak("shugoTimeUrl", v)} />
+      </TweakSection>
+      <TweakSection title="Layout">
+        <TweakSlider label="División izq/der"    value={t.splitPct} onChange={(v) => setTweak("splitPct", v)} min={20} max={80} step={1} unit="%" />
+        <TweakSlider label="Ancho mín. tarjeta VM" value={t.vmMin} onChange={(v) => setTweak("vmMin", v)}    min={200} max={420} step={10} unit="px" />
+        <TweakToggle label="Modo denso" value={t.dense} onChange={(v) => setTweak("dense", v)} />
+      </TweakSection>
+      <TweakSection title="Radio">
+        <TweakSelect label="Estación" value={t.stationUrl} onChange={(v) => setTweak("stationUrl", v)}
+          options={window.RADIO_STATIONS.map(s => ({ label: s.name, value: s.url }))} />
+      </TweakSection>
+    </TweaksPanel>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+services:
+  shugo-dashboard:
+    build: .
+    container_name: shugo-tv-dashboard
+    ports:
+      - "8080:80"
+    restart: unless-stopped
