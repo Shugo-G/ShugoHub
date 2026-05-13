@@ -1,13 +1,15 @@
 services:
   shugo-dashboard:
     build: .
-    container_name: shugo-tv-dashboard
-    ports:
-      - "8080:80"
+    container_name: shugo-tv-prod
     restart: unless-stopped
     networks:
       - shugohub-net
+      - npm-net
 
 networks:
   shugohub-net:
     driver: bridge
+  npm-net:
+    external: true
+    name: nginx-proxy-manager_npm-net
