@@ -95,7 +95,9 @@ body {
 .clock-block { display: flex; align-items: baseline; gap: 18px; justify-content: center; }
 .clock-time  { font-size: 32px; font-weight: 600; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
 .clock-secs  { font-size: 20px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.clock-date  { font-size: 12px; letter-spacing: 0.18em; color: var(--ink-3); text-transform: uppercase; }
+.clock-date  { font-size: 32px; font-weight: 600; letter-spacing: 0.08em; color: var(--ink-3); text-transform: uppercase; }
+.clock-temp  { display: flex; align-items: center; gap: 8px; font-size: 32px; font-weight: 600; letter-spacing: 0.04em; color: var(--accent); font-variant-numeric: tabular-nums; }
+.clock-div   { width: 1.5px; height: 38px; background: var(--border-2); border-radius: 2px; align-self: center; }
 
 .topbar-right { display: flex; align-items: center; gap: 14px; justify-content: flex-end; }
 .live-pill {
@@ -239,21 +241,19 @@ body {
 .panel-link:hover { border-color: var(--accent); color: var(--accent); }
 .panel-link svg { width: 11px; height: 11px; }
 
-/* ============ VM cards (compact) ============ */
+/* ============ VM cards ============ */
 .vm-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--vm-min, 280px), 1fr));
-  grid-auto-rows: 104px;
+  grid-template-columns: repeat(auto-fill, minmax(var(--vm-min, 240px), 1fr));
+  grid-auto-rows: 205px;
   gap: 10px; height: 100%; align-content: start;
 }
 .vm {
   background: linear-gradient(180deg, var(--panel-2) 0%, #131a25 100%);
   border: 1px solid var(--border); border-radius: 10px;
-  padding: 12px 14px; display: grid;
-  grid-template-columns: 64px 1fr auto;
-  grid-template-rows: auto auto;
-  column-gap: 14px; row-gap: 6px;
-  align-items: center; position: relative; overflow: hidden;
+  padding: 10px 14px 8px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; position: relative; overflow: hidden;
 }
 .vm::before {
   content: ""; position: absolute; left: 0; top: 0; bottom: 0;
@@ -263,31 +263,18 @@ body {
 .vm.crit::before    { background: var(--crit); color: var(--crit); }
 .vm.offline::before { background: var(--ink-4); color: var(--ink-4); }
 
-.vm-dial { grid-row: 1 / span 2; width: 64px; height: 64px; display: grid; place-items: center; position: relative; }
-.vm-dial svg { position: absolute; inset: 0; transform: rotate(-90deg); }
-.vm-dial-val   { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
-.vm-dial-suf   { font-size: 10px; color: var(--ink-3); margin-left: 1px; }
-.vm-dial-label { position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); font-size: 7.5px; letter-spacing: 0.22em; color: var(--ink-4); }
-
-.vm-head { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.vm-name { font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
-.vm-ip   { font-size: 10.5px; color: var(--ink-3); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
-
-.vm-status { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; grid-column: 3; grid-row: 1 / span 2; justify-content: center; }
-.vm-bars   { display: grid; gap: 4px; min-width: 0; }
-.vm-bar-row {
-  display: grid; grid-template-columns: 28px 1fr 40px;
-  align-items: center; gap: 8px;
+.vm-name {
+  font-size: 20px; font-weight: 700; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%; text-align: center; line-height: 1.2;
 }
-.vm-bar-label { font-size: 8.5px; letter-spacing: 0.18em; color: var(--ink-3); text-transform: uppercase; font-weight: 600; }
-.vm-bar       { height: 4px; background: var(--border-2); border-radius: 3px; overflow: hidden; }
-.vm-bar-fill  { height: 100%; background: var(--ok); border-radius: 3px; transition: width 0.4s ease; }
-.vm-bar-fill.warn { background: var(--warn); }
-.vm-bar-fill.crit { background: var(--crit); }
-.vm-bar-val   { font-size: 10px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
-
+.vm-ip {
+  font-size: 13px; color: var(--ink-3); letter-spacing: 0.04em;
+  white-space: nowrap; text-align: center; line-height: 1;
+}
 .vm-conn {
-  width: 12px; height: 12px; border-radius: 50%;
+  position: absolute; top: 11px; right: 12px;
+  width: 11px; height: 11px; border-radius: 50%;
   background: var(--ok);
   box-shadow: 0 0 10px var(--ok), 0 0 0 2px rgba(46, 213, 115, 0.12);
 }
@@ -295,33 +282,45 @@ body {
   background: var(--crit);
   box-shadow: 0 0 10px var(--crit), 0 0 0 2px rgba(255, 80, 80, 0.12);
 }
+.vm-gauges { display: flex; gap: 14px; margin-top: 4px; justify-content: center; }
+.vm-gauge  { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.vm-gauge-ring { position: relative; display: grid; place-items: center; }
+.vm-gauge-val  {
+  position: absolute;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 18px; font-weight: 700;
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.vm-gauge-suf  { font-size: 11px; color: var(--ink-3); }
+.vm-gauge-lbl  {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-2);
+}
 
 /* ============ Clock list ============ */
-.clock-table { width: 100%; height: 100%; display: flex; flex-direction: column; font-size: 12px; }
+.clock-table { width: 100%; height: 100%; display: flex; flex-direction: column; }
 .clock-table-head {
-  display: grid; grid-template-columns: 16px 1.6fr 1.9fr 90px 90px;
-  gap: 10px; padding: 6px 10px 8px;
+  display: grid; grid-template-columns: 20px 1fr 110px;
+  gap: 14px; padding: 6px 14px 8px;
   border-bottom: 1px solid var(--border);
-  font-size: 9px; letter-spacing: 0.22em; color: var(--ink-4); text-transform: uppercase;
+  font-size: 10px; letter-spacing: 0.22em; color: var(--ink-4); text-transform: uppercase;
 }
 .clock-table-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .clock-row {
-  display: grid; grid-template-columns: 16px 1.6fr 1.9fr 90px 90px;
-  gap: 10px; align-items: center;
-  padding: 0 10px; flex: 1; min-height: 0;
+  display: grid; grid-template-columns: 20px 1fr 110px;
+  gap: 14px; align-items: center;
+  padding: 0 14px; flex: 1; min-height: 0;
   border-bottom: 1px solid rgba(31, 39, 53, 0.6);
   position: relative; transition: background 0.15s;
 }
 .clock-row:hover { background: rgba(56, 189, 248, 0.04); }
 .clock-row:last-child { border-bottom: none; }
-.clock-row .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px currentColor; color: var(--ok); }
+.clock-row .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 10px currentColor; color: var(--ok); }
 .clock-row.err   .dot { background: var(--crit); color: var(--crit); }
 .clock-row.stale .dot { background: var(--warn); color: var(--warn); }
-.clock-row .name  { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.01em; }
-.clock-row .ip    { font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.clock-row .idadm { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.clock-row .idadm-pref { color: var(--ink-4); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; margin-right: 4px; }
-.clock-row .last  { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.clock-row .name  { font-size: 16px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.01em; }
+.clock-row .last  { font-size: 15px; color: var(--ink-2); font-variant-numeric: tabular-nums; text-align: right; }
 
 /* ============ Footer ============ */
 .foot {
@@ -541,15 +540,24 @@ const RADIO_STATIONS = [
 function normalizeVM(v) {
   const s = v.latest_status || {};
   const noData = !v.latest_status;
+  const cpu  = parseFloat(s.cpu_usage    ?? 0) || 0;
+  const ram  = parseFloat(s.ram_percent  ?? 0) || 0;
+  const disk = parseFloat(s.disk_percent ?? 0) || 0;
+
+  let status = 'online';
+  if (noData) {
+    status = 'offline';
+  } else if (cpu >= 90 || ram >= 90 || disk >= 90) {
+    status = 'crit';
+  } else if (v.is_stale || cpu >= 70 || ram >= 80 || disk >= 80) {
+    status = 'warn';
+  }
+
   return {
-    name:   v.display_name || v.hostname || v.name || '?',
-    ip:     v.ip_address   || v.ip       || '',
-    cpu:    parseFloat(s.cpu_usage    ?? 0) || 0,
-    ram:    parseFloat(s.ram_percent  ?? 0) || 0,
-    disk:   parseFloat(s.disk_percent ?? 0) || 0,
-    status: noData ? 'offline' : (v.is_stale ? 'warn' : 'online'),
-    warn:   0,
-    crit:   0,
+    name: v.display_name || v.hostname || v.name || '?',
+    ip:   v.ip_address   || v.ip       || '',
+    cpu, ram, disk, status,
+    warn: 0, crit: 0,
   };
 }
 
@@ -594,7 +602,7 @@ function useClock() {
 }
 
 // ---------- TopBar ----------
-function TopBar({ station, onStation, playing, onTogglePlay, vol, onVol }) {
+function TopBar({ station, onStation, playing, onTogglePlay, vol, onVol, temp }) {
   const now = useClock();
   return (
     <div className="topbar">
@@ -611,6 +619,18 @@ function TopBar({ station, onStation, playing, onTogglePlay, vol, onVol }) {
           <span className="clock-secs mono">:{fmtSec(now)}</span>
         </div>
         <div className="clock-date mono">{fmtDate(now)}</div>
+        {temp !== null && <>
+          <span className="clock-div"></span>
+          <div className="clock-temp mono">
+            <svg width="16" height="30" viewBox="0 0 14 28" fill="none" style={{opacity: 0.75}}>
+              <rect x="5" y="1" width="4" height="17" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+              <circle cx="7" cy="23" r="4.5" stroke="currentColor" strokeWidth="1.5"/>
+              <rect x="6.25" y="11" width="1.5" height="10" rx="0.75" fill="currentColor"/>
+              <circle cx="7" cy="23" r="2.8" fill="currentColor"/>
+            </svg>
+            {temp}°C
+          </div>
+        </>}
       </div>
       <div className="topbar-right">
         <div className="live-pill"><span className="live-dot"></span> En vivo</div>
@@ -655,20 +675,20 @@ function RadioCard({ station, onStation, playing, onTogglePlay, vol, onVol }) {
 
 // ---------- KPIs ----------
 function Kpis({ vms, clocks, lastCycle, fichadas }) {
-  const onlineVms  = vms.filter(v => v.status === "online" || v.status === "warn").length;
+  const onlineVms  = vms.filter(v => v.status !== "offline").length;
   const warnVms    = vms.filter(v => v.status === "warn").length;
   const critVms    = vms.filter(v => v.status === "crit").length;
-  const totalWarns = vms.reduce((a, v) => a + (v.warn || 0), 0);
+  const offlineVms = vms.filter(v => v.status === "offline").length;
   const okClocks   = clocks.filter(c => c.status === "ok").length;
   const errClocks  = clocks.filter(c => c.status !== "ok").length;
 
   const items = [
     { label: "VMs ONLINE",   val: `${onlineVms}/${vms.length}`, tone: "ok",   hint: "Servidores" },
-    { label: "VMs WARN",     val: warnVms,   tone: warnVms  ? "warn" : "muted", hint: "Servidores" },
-    { label: "VMs CRIT",     val: critVms,   tone: critVms  ? "crit" : "muted", hint: "Servidores" },
-    { label: "Alertas",      val: totalWarns,tone: totalWarns > 50 ? "warn" : "info", hint: "Servidores" },
+    { label: "VMs WARN",     val: warnVms,    tone: warnVms    ? "warn" : "muted", hint: "Servidores" },
+    { label: "VMs CRIT",     val: critVms,    tone: critVms    ? "crit" : "muted", hint: "Servidores" },
+    { label: "Offline",      val: offlineVms, tone: offlineVms ? "crit" : "muted", hint: "Servidores" },
     { label: "Relojes OK",   val: `${okClocks}/${clocks.length}`, tone: "ok", hint: "Relojes" },
-    { label: "Con error",    val: errClocks, tone: errClocks ? "crit" : "muted", hint: "Relojes" },
+    { label: "Con error",    val: errClocks,  tone: errClocks  ? "crit" : "muted", hint: "Relojes" },
     { label: "Último ciclo", val: lastCycle, tone: "info",   hint: "Relojes", small: true },
     { label: "Fichadas",     val: fichadas,  tone: "muted",  hint: "Último ciclo" },
   ];
@@ -719,48 +739,42 @@ function Splitter({ pct, onChange }) {
   );
 }
 
+// ---------- Gauge ----------
+function Gauge({ value, label, tone }) {
+  const r = 36, c = 2 * Math.PI * r;
+  const off = c * (1 - Math.min(100, value) / 100);
+  return (
+    <div className="vm-gauge">
+      <div className="vm-gauge-ring">
+        <svg width="86" height="86">
+          <circle cx="43" cy="43" r={r} fill="none" stroke="var(--border-2)" strokeWidth="5"/>
+          <circle cx="43" cy="43" r={r} fill="none" stroke={`var(--${tone})`} strokeWidth="5"
+            strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
+            transform="rotate(-90 43 43)"/>
+        </svg>
+        <div className="vm-gauge-val">{(+value).toFixed(1)}<span className="vm-gauge-suf">%</span></div>
+      </div>
+      <div className="vm-gauge-lbl">{label}</div>
+    </div>
+  );
+}
+
 // ---------- VM card ----------
 function VMCard({ vm }) {
-  const cpuTone  = vm.cpu  >= 80 ? "crit" : vm.cpu  >= 50 ? "warn" : "ok";
-  const ramTone  = vm.ram  >= 85 ? "crit" : vm.ram  >= 70 ? "warn" : "ok";
-  const diskTone = vm.disk >= 85 ? "crit" : vm.disk >= 70 ? "warn" : "ok";
+  const cpuTone  = vm.cpu  >= 90 ? "crit" : vm.cpu  >= 70 ? "warn" : "ok";
+  const ramTone  = vm.ram  >= 90 ? "crit" : vm.ram  >= 80 ? "warn" : "ok";
+  const diskTone = vm.disk >= 90 ? "crit" : vm.disk >= 80 ? "warn" : "ok";
   const statusClass = vm.status === "warn" ? "warn" : vm.status === "crit" ? "crit" : vm.status === "offline" ? "offline" : "";
-  const dialR = 23, dialC = 2 * Math.PI * dialR;
-  const dialOff = dialC * (1 - Math.min(100, vm.cpu) / 100);
-
   return (
     <div className={"vm " + statusClass}>
-      <div className="vm-dial">
-        <svg width="56" height="56">
-          <circle cx="28" cy="28" r={dialR} fill="none" stroke="var(--border-2)" strokeWidth="3"/>
-          <circle cx="28" cy="28" r={dialR} fill="none" stroke={`var(--${cpuTone})`} strokeWidth="3"
-            strokeDasharray={dialC} strokeDashoffset={dialOff} strokeLinecap="round"/>
-        </svg>
-        <div>
-          <span className="vm-dial-val mono">{vm.cpu.toFixed ? vm.cpu.toFixed(1) : vm.cpu}</span>
-          <span className="vm-dial-suf mono">%</span>
-        </div>
-        <div className="vm-dial-label mono">CPU</div>
-      </div>
-      <div className="vm-head">
-        <div className="vm-name">{vm.name}</div>
-        <div className="vm-ip mono">{vm.ip}</div>
-      </div>
-      <div className="vm-status">
-        <span className={"vm-conn " + (vm.status === "offline" ? "off" : "")}
-          title={vm.status === "offline" ? "Sin conexión" : "Conectado"}></span>
-      </div>
-      <div className="vm-bars" style={{ gridColumn: "2", gridRow: "2" }}>
-        <div className="vm-bar-row">
-          <div className="vm-bar-label">RAM</div>
-          <div className="vm-bar"><div className={"vm-bar-fill " + ramTone} style={{ width: vm.ram + "%" }}/></div>
-          <div className="vm-bar-val mono">{(+vm.ram).toFixed(1)}%</div>
-        </div>
-        <div className="vm-bar-row">
-          <div className="vm-bar-label">DISK</div>
-          <div className="vm-bar"><div className={"vm-bar-fill " + diskTone} style={{ width: vm.disk + "%" }}/></div>
-          <div className="vm-bar-val mono">{(+vm.disk).toFixed(1)}%</div>
-        </div>
+      <span className={"vm-conn " + (vm.status === "offline" ? "off" : "")}
+        title={vm.status === "offline" ? "Sin conexión" : "Conectado"}></span>
+      <div className="vm-name">{vm.name}</div>
+      <div className="vm-ip mono">{vm.ip}</div>
+      <div className="vm-gauges">
+        <Gauge value={vm.cpu}  label="CPU"  tone={cpuTone}  />
+        <Gauge value={vm.ram}  label="RAM"  tone={ramTone}  />
+        <Gauge value={vm.disk} label="DISK" tone={diskTone} />
       </div>
     </div>
   );
@@ -773,8 +787,6 @@ function ClockRow({ c }) {
     <div className={"clock-row " + cls}>
       <span className="dot"></span>
       <div className="name">{c.name}</div>
-      <div className="ip mono">{c.ip}</div>
-      <div className="idadm"><span className="idadm-pref">idadm</span>{c.idadm}</div>
       <div className="last mono">{c.last}</div>
     </div>
   );
@@ -787,7 +799,7 @@ function App() {
     "stationUrl":     "https://playerservices.streamtheworld.com/api/livestream-redirect/ASPEN.mp3",
     "shugoVisionUrl": "http://shugovision.dposs.gob.ar",
     "shugoTimeUrl":   "http://relojes.dposs.gob.ar",
-    "splitPct":       67,
+    "splitPct":       70,
     "vmMin":          260,
   });
 
@@ -801,6 +813,25 @@ function App() {
   const [lastFetch, setLastFetch]     = useState(null);
   const [fichadas, setFichadas]       = useState(0);
   const [lastCycleStr, setLastCycleStr] = useState(null);
+  const [temp, setTemp] = useState(null);
+
+  // Temperatura Ushuaia: actualizar cada 10 min
+  useEffect(() => {
+    async function fetchTemp() {
+      try {
+        const r = await fetch('/api/weather/forecast?latitude=-54.8019&longitude=-68.3030&current=temperature_2m');
+        if (!r.ok) throw new Error(r.status);
+        const data = await r.json();
+        const t = data.current?.temperature_2m;
+        if (t != null) setTemp(Math.round(t));
+      } catch(e) {
+        console.warn('[ShugoHub] Weather fetch:', e.message);
+      }
+    }
+    fetchTemp();
+    const id = setInterval(fetchTemp, 10 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   // VMs: poll every 10s
   useEffect(() => {
@@ -885,7 +916,7 @@ function App() {
       <audio ref={audioRef} preload="none" crossOrigin="anonymous"></audio>
       <div className="stage">
         <TopBar station={station} onStation={(s) => setTweak("stationUrl", s.url)}
-          playing={playing} onTogglePlay={togglePlay} vol={vol} onVol={setVol} />
+          playing={playing} onTogglePlay={togglePlay} vol={vol} onVol={setVol} temp={temp} />
 
         <Kpis vms={vms} clocks={clocks} lastCycle={lastCycle} fichadas={fichadas} />
 
@@ -917,7 +948,7 @@ function App() {
           {/* RELOJES */}
           <div className="panel">
             <div className="panel-head">
-              <div className="panel-title"><span className="accent-bar"></span>Relojes biométricos · ShugoTime</div>
+              <div className="panel-title"><span className="accent-bar"></span>Relojes · ShugoTime</div>
               <div className="panel-meta">
                 <span><b className="mono">{clocks.length}</b> activos</span>
                 <span><b className="mono" style={{ color: "var(--ok)" }}>{clocks.filter(c => c.status === "ok").length}</b> OK</span>
@@ -930,10 +961,10 @@ function App() {
             <div className="panel-body" style={{ padding: "6px 8px" }}>
               <div className="clock-table">
                 <div className="clock-table-head">
-                  <span></span><span>Reloj</span><span>Dirección</span><span>idadm</span><span>Último ciclo</span>
+                  <span></span><span>Reloj</span><span>Último ciclo</span>
                 </div>
                 <div className="clock-table-body">
-                  {clocks.map(c => <ClockRow key={c.name} c={c} />)}
+                  {[...clocks].sort((a, b) => (a.status === "ok") - (b.status === "ok")).map(c => <ClockRow key={c.name} c={c} />)}
                 </div>
               </div>
             </div>
