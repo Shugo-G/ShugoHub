@@ -575,9 +575,9 @@ function normalizeVM(v) {
   let status = 'online';
   if (noData) {
     status = 'offline';
-  } else if (cpu >= 90 || ram >= 90 || disk >= 90 || v.is_stale || staleByTime) {
+  } else if (cpu > 80 || ram > 80 || disk > 80 || v.is_stale || staleByTime) {
     status = 'crit';
-  } else if (cpu >= 70 || ram >= 80 || disk >= 80) {
+  } else if (cpu > 50 || ram > 50 || disk > 50) {
     status = 'warn';
   }
 
@@ -821,9 +821,9 @@ function Gauge({ value, label, tone }) {
 
 // ---------- VM card ----------
 function VMCard({ vm }) {
-  const cpuTone  = vm.cpu  >= 90 ? "crit" : vm.cpu  >= 70 ? "warn" : "ok";
-  const ramTone  = vm.ram  >= 90 ? "crit" : vm.ram  >= 80 ? "warn" : "ok";
-  const diskTone = vm.disk >= 90 ? "crit" : vm.disk >= 80 ? "warn" : "ok";
+  const cpuTone  = vm.cpu  > 80 ? "crit" : vm.cpu  > 50 ? "warn" : "ok";
+  const ramTone  = vm.ram  > 80 ? "crit" : vm.ram  > 50 ? "warn" : "ok";
+  const diskTone = vm.disk > 80 ? "crit" : vm.disk > 50 ? "warn" : "ok";
   const statusClass = vm.status === "warn" ? "warn" : vm.status === "crit" ? "crit" : vm.status === "offline" ? "offline" : "";
   return (
     <div className={"vm " + statusClass}>
