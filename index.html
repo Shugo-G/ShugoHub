@@ -115,31 +115,6 @@ body {
 }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-/* ============ World Cup countdown ============ */
-.wc-pill {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 7px 14px; border-radius: 10px;
-  border: 1px solid rgba(99, 179, 237, 0.25);
-  background: linear-gradient(135deg, rgba(99, 179, 237, 0.06), rgba(26, 54, 93, 0.4));
-  color: #90cdf4;
-  white-space: nowrap;
-}
-.wc-ball {
-  font-size: 20px; line-height: 1; flex-shrink: 0;
-  filter: drop-shadow(0 0 6px rgba(144, 205, 244, 0.5));
-}
-.wc-info { display: flex; flex-direction: column; gap: 2px; }
-.wc-label {
-  font-size: 9px; letter-spacing: 0.26em; color: rgba(144, 205, 244, 0.6);
-  text-transform: uppercase; font-weight: 600; line-height: 1;
-}
-.wc-time {
-  font-size: 14px; font-weight: 700; letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums; line-height: 1.1; color: #90cdf4;
-}
-.wc-num { font-size: 20px; font-weight: 700; color: #e2f0ff; }
-.wc-unit { font-size: 11px; color: rgba(144, 205, 244, 0.6); letter-spacing: 0.1em; }
-
 /* ============ Radio card ============ */
 .radio {
   display: grid; grid-template-columns: auto 1fr auto;
@@ -573,9 +548,9 @@ function normalizeVM(v) {
   const staleByTime = tsRaw ? (Date.now() - new Date(tsRaw).getTime() > 3 * 60 * 1000) : false;
 
   let status = 'online';
-  if (noData) {
+  if (noData || v.is_stale || staleByTime) {
     status = 'offline';
-  } else if (cpu > 80 || ram > 80 || disk > 80 || v.is_stale || staleByTime) {
+  } else if (cpu > 80 || ram > 80 || disk > 80) {
     status = 'crit';
   } else if (cpu > 50 || ram > 50 || disk > 50) {
     status = 'warn';
@@ -629,37 +604,6 @@ function useClock() {
   return t;
 }
 
-// ---------- WorldCupCountdown ----------
-const WC_KICKOFF = new Date('2026-06-11T00:00:00');
-
-function WorldCupCountdown() {
-  const now = useClock();
-  const diff = WC_KICKOFF - now;
-  if (diff <= 0) return (
-    <div className="wc-pill">
-      <span className="wc-ball">⚽</span>
-      <div className="wc-info">
-        <div className="wc-label">MUNDIAL 2026</div>
-        <div className="wc-time" style={{ color: '#68d391' }}>¡EN JUEGO!</div>
-      </div>
-    </div>
-  );
-  const days  = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  return (
-    <div className="wc-pill" title="Cuenta regresiva al Mundial de Fútbol 2026">
-      <span className="wc-ball">⚽</span>
-      <div className="wc-info">
-        <div className="wc-label">MUNDIAL 2026</div>
-        <div className="wc-time">
-          <span className="wc-num">{days}</span><span className="wc-unit">d </span>
-          <span className="wc-num">{hours}</span><span className="wc-unit">h</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ---------- TopBar ----------
 function TopBar({ station, onStation, playing, onTogglePlay, vol, onVol, temp }) {
   const now = useClock();
@@ -692,7 +636,6 @@ function TopBar({ station, onStation, playing, onTogglePlay, vol, onVol, temp })
         </>}
       </div>
       <div className="topbar-right">
-        <WorldCupCountdown />
         <div className="live-pill"><span className="live-dot"></span> En vivo</div>
         <RadioCard station={station} onStation={onStation} playing={playing} onTogglePlay={onTogglePlay} vol={vol} onVol={onVol} />
       </div>
