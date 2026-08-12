@@ -7,6 +7,17 @@ services:
     restart: unless-stopped
     networks:
       - shugohub-net
+    depends_on:
+      - ticket-api
+
+  ticket-api:
+    build: ./ticket-api
+    container_name: shugo-ticket-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - shugohub-net
 
 networks:
   shugohub-net:

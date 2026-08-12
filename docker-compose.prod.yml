@@ -6,6 +6,17 @@ services:
     networks:
       - shugohub-net
       - npm-net
+    depends_on:
+      - ticket-api
+
+  ticket-api:
+    build: ./ticket-api
+    container_name: shugo-ticket-api-prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - shugohub-net
 
 networks:
   shugohub-net:

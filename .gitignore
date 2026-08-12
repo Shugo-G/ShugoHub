@@ -4,3 +4,7 @@ app.jsx
 data.jsx
 styles.css
 tweaks-panel.jsx
+
+# Credenciales
+.env
+ticket-api/node_modules
