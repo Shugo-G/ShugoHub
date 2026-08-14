@@ -1,9 +1,9 @@
 # Archivos del prototipo de diseño (no necesarios en producción)
-ShugoHub TV Dashboard.html
-app.jsx
-data.jsx
-styles.css
-tweaks-panel.jsx
+/ShugoHub TV Dashboard.html
+/app.jsx
+/data.jsx
+/styles.css
+/tweaks-panel.jsx
 
 # Credenciales
 .env
