@@ -243,62 +243,39 @@ body {
 .panel-link:hover { border-color: var(--accent); color: var(--accent); }
 .panel-link svg { width: 11px; height: 11px; }
 
-/* ============ VM cards ============ */
-.vm-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--vm-min, 240px), 1fr));
-  grid-auto-rows: 205px;
-  gap: 10px; height: 100%; align-content: start;
+/* ============ VM list ============ */
+.vm-list { display: flex; flex-direction: column; height: 100%; overflow-y: auto; }
+.vm-row {
+  display: grid; grid-template-columns: 14px 1fr auto;
+  align-items: center; gap: 16px;
+  padding: 11px 8px;
+  border-bottom: 1px solid rgba(31, 39, 53, 0.55);
 }
-.vm {
-  background: linear-gradient(180deg, var(--panel-2) 0%, #131a25 100%);
-  border: 1px solid var(--border); border-radius: 10px;
-  padding: 10px 14px 8px;
-  display: flex; flex-direction: column; align-items: center;
-  gap: 4px; position: relative; overflow: hidden;
+.vm-row:last-child { border-bottom: none; }
+.vm-row .dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--ok); box-shadow: 0 0 8px currentColor; color: var(--ok);
 }
-.vm::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 3px; background: var(--ok); box-shadow: 0 0 10px currentColor;
-}
-.vm.warn::before    { background: var(--warn); color: var(--warn); }
-.vm.crit::before    { background: var(--crit); color: var(--crit); }
-.vm.offline::before { background: var(--ink-4); color: var(--ink-4); }
-
-.vm-name {
-  font-size: 20px; font-weight: 700; color: var(--ink);
+.vm-row.offline .dot { background: var(--crit); color: var(--crit); }
+.vm-row-id { min-width: 0; }
+.vm-row-name {
+  font-size: 16px; font-weight: 700; color: var(--ink);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 100%; text-align: center; line-height: 1.2;
 }
-.vm-ip {
-  font-size: 13px; color: var(--ink-3); letter-spacing: 0.04em;
-  white-space: nowrap; text-align: center; line-height: 1;
+.vm-row-ip { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+.vm-row-metrics { display: flex; align-items: center; gap: 20px; }
+.vm-row-offline-msg {
+  font-size: 13px; font-weight: 700; color: var(--crit);
+  letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap;
 }
-.vm-conn {
-  position: absolute; top: 11px; right: 12px;
-  width: 11px; height: 11px; border-radius: 50%;
-  background: var(--ok);
-  box-shadow: 0 0 10px var(--ok), 0 0 0 2px rgba(46, 213, 115, 0.12);
-}
-.vm-conn.off {
-  background: var(--crit);
-  box-shadow: 0 0 10px var(--crit), 0 0 0 2px rgba(255, 80, 80, 0.12);
-}
-.vm-gauges { display: flex; gap: 14px; margin-top: 4px; justify-content: center; }
-.vm-gauge  { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.vm-gauge-ring { position: relative; display: grid; place-items: center; }
-.vm-gauge-val  {
-  position: absolute;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 18px; font-weight: 700;
-  font-variant-numeric: tabular-nums; line-height: 1;
-}
-.vm-gauge-suf  { font-size: 11px; color: var(--ink-3); }
-.vm-gauge-lbl  {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 13px; font-weight: 600; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--ink-2);
-}
+.vm-metric { display: flex; align-items: center; gap: 8px; }
+.vm-metric .lbl { font-size: 12px; color: var(--ink-3); width: 9px; }
+.vm-metric .bar { width: 70px; height: 5px; border-radius: 3px; background: var(--border-2); overflow: hidden; }
+.vm-metric .bar > span { display: block; height: 100%; border-radius: 3px; }
+.vm-metric .bar .ok   { background: var(--ok); }
+.vm-metric .bar .warn { background: var(--warn); }
+.vm-metric .bar .crit { background: var(--crit); }
+.vm-metric .val { font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; width: 36px; text-align: right; }
 
 /* ============ Clock list ============ */
 .clock-table { width: 100%; height: 100%; display: flex; flex-direction: column; }
@@ -330,18 +307,18 @@ body {
 .main-right { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
 .main-right .panel { min-height: 0; }
 .tickets-panel { flex: 0 0 auto; }
-.main-right .panel:last-child { flex: 1; }
+.agents-panel { flex: 1; }
 
 /* ============ Tickets panel ============ */
 @keyframes tixFade { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
-.tix-rows { display: flex; flex-direction: column; gap: 8px; }
+.tix-rows { display: flex; flex-direction: column; gap: 10px; }
 .tix-row {
-  display: grid; grid-template-columns: 52px 1fr auto;
-  align-items: center; gap: 12px;
-  padding: 9px 12px; border-radius: 8px;
+  display: grid; grid-template-columns: 70px 1fr auto;
+  align-items: center; gap: 16px;
+  padding: 16px 18px; border-radius: 8px;
   background: rgba(20, 27, 38, 0.45);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--border-2);
+  border-left: 4px solid var(--border-2);
   cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
 .tix-row:hover { background: rgba(56, 189, 248, 0.06); border-color: var(--border-2); }
@@ -349,37 +326,37 @@ body {
 .tix-row.reab { border-left-color: var(--warn); }
 .tix-row.info { border-left-color: var(--info); }
 .tix-badge { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
-.tix-badge .num { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.tix-badge .lbl { font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); margin-top: 3px; }
+.tix-badge .num { font-size: 36px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tix-badge .lbl { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); margin-top: 5px; }
 .tix-row.pend .tix-badge .num { color: var(--crit); }
 .tix-row.reab .tix-badge .num { color: var(--warn); }
 .tix-row.info .tix-badge .num { color: var(--info); }
 .tix-body { min-width: 0; overflow: hidden; }
-.tix-title { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: tixFade 0.4s ease; }
-.tix-meta  { font-size: 10.5px; color: var(--ink-3); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: tixFade 0.4s ease; }
-.tix-empty-row { font-size: 12px; color: var(--ink-4); font-style: italic; }
+.tix-title { font-size: 20px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: tixFade 0.4s ease; }
+.tix-meta  { font-size: 15px; color: var(--ink-3); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: tixFade 0.4s ease; }
+.tix-empty-row { font-size: 16px; color: var(--ink-4); font-style: italic; }
 .tix-arrow { color: var(--ink-4); flex-shrink: 0; }
 
 /* ============ Agentes panel ============ */
-.agents-list { display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; }
+.agents-list { display: flex; flex-direction: column; gap: 6px; height: 100%; overflow-y: auto; }
 .agent-row {
   display: grid; grid-template-columns: 52px 1fr auto;
   align-items: center; gap: 12px;
-  padding: 8px 12px; border-radius: 8px;
+  padding: 7px 14px; border-radius: 8px;
   background: rgba(20, 27, 38, 0.45);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-left: 4px solid var(--accent);
   cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
 .agent-row:hover { background: rgba(56, 189, 248, 0.06); }
 .agent-badge { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
-.agent-badge .num { font-size: 20px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.agent-badge .num { font-size: 21px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
 .agent-badge .lbl { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-top: 3px; }
 .agent-body { min-width: 0; overflow: hidden; }
-.agent-name { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.agent-breakdown { font-size: 10.5px; color: var(--ink-3); margin-top: 3px; display: flex; gap: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+.agent-name { font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agent-breakdown { font-size: 11px; color: var(--ink-3); margin-top: 3px; display: flex; gap: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
 .agent-breakdown b { color: var(--ink-2); font-weight: 600; }
-.agent-empty { font-size: 12px; color: var(--ink-4); font-style: italic; padding: 10px 4px; }
+.agent-empty { font-size: 14px; color: var(--ink-4); font-style: italic; padding: 10px 4px; }
 
 /* ============ Tickets modal ============ */
 .tix-modal-overlay {
@@ -454,7 +431,7 @@ body {
 .cycle-tick { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
 
 /* density */
-body.dense .vm  { padding: 10px 12px; }
+body.dense .vm-row { padding: 8px 8px; }
 body.dense .kpi { padding: 11px 14px; }
 body.dense .kpi-val { font-size: 28px; }
 </style>
@@ -681,6 +658,7 @@ function normalizeVM(v) {
     name: v.display_name || v.hostname || v.name || '?',
     ip:   v.ip_address   || v.ip       || '',
     cpu, ram, disk, status,
+    lastSeen: tsRaw || null,
     warn: 0, crit: 0,
   };
 }
@@ -869,42 +847,47 @@ function Splitter({ pct, onChange }) {
 }
 
 // ---------- Gauge ----------
-function Gauge({ value, label, tone }) {
-  const r = 36, c = 2 * Math.PI * r;
-  const off = c * (1 - Math.min(100, value) / 100);
+function VMMetric({ label, value }) {
+  const tone = value > 80 ? "crit" : value > 50 ? "warn" : "ok";
   return (
-    <div className="vm-gauge">
-      <div className="vm-gauge-ring">
-        <svg width="86" height="86">
-          <circle cx="43" cy="43" r={r} fill="none" stroke="var(--border-2)" strokeWidth="5"/>
-          <circle cx="43" cy="43" r={r} fill="none" stroke={`var(--${tone})`} strokeWidth="5"
-            strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
-            transform="rotate(-90 43 43)"/>
-        </svg>
-        <div className="vm-gauge-val">{(+value).toFixed(1)}<span className="vm-gauge-suf">%</span></div>
-      </div>
-      <div className="vm-gauge-lbl">{label}</div>
+    <div className="vm-metric">
+      <span className="lbl">{label}</span>
+      <span className="bar"><span className={tone} style={{ width: `${Math.min(100, value)}%` }}></span></span>
+      <span className="val mono">{(+value).toFixed(1)}</span>
     </div>
   );
 }
 
-// ---------- VM card ----------
-function VMCard({ vm }) {
-  const cpuTone  = vm.cpu  > 80 ? "crit" : vm.cpu  > 50 ? "warn" : "ok";
-  const ramTone  = vm.ram  > 80 ? "crit" : vm.ram  > 50 ? "warn" : "ok";
-  const diskTone = vm.disk > 80 ? "crit" : vm.disk > 50 ? "warn" : "ok";
-  const statusClass = vm.status === "warn" ? "warn" : vm.status === "crit" ? "crit" : vm.status === "offline" ? "offline" : "";
+function fmtAgo(iso) {
+  if (!iso) return null;
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (isNaN(mins) || mins < 0) return null;
+  if (mins < 60) return `${mins} min`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} h`;
+  return `${Math.round(hours / 24)} d`;
+}
+
+// ---------- VM row ----------
+function VMRow({ vm }) {
+  const isOffline = vm.status === "offline";
+  const ago = fmtAgo(vm.lastSeen);
   return (
-    <div className={"vm " + statusClass}>
-      <span className={"vm-conn " + (vm.status === "offline" ? "off" : "")}
-        title={vm.status === "offline" ? "Sin conexión" : "Conectado"}></span>
-      <div className="vm-name">{vm.name}</div>
-      <div className="vm-ip mono">{vm.ip}</div>
-      <div className="vm-gauges">
-        <Gauge value={vm.cpu}  label="CPU"  tone={cpuTone}  />
-        <Gauge value={vm.ram}  label="RAM"  tone={ramTone}  />
-        <Gauge value={vm.disk} label="DISK" tone={diskTone} />
+    <div className={"vm-row " + (isOffline ? "offline" : "")}>
+      <span className="dot"></span>
+      <div className="vm-row-id">
+        <div className="vm-row-name">{vm.name}</div>
+        <div className="vm-row-ip mono">{vm.ip}</div>
       </div>
+      {isOffline ? (
+        <div className="vm-row-offline-msg">Offline{ago ? ` · Sin respuesta hace ${ago}` : " · Sin conexión"}</div>
+      ) : (
+        <div className="vm-row-metrics">
+          <VMMetric label="c" value={vm.cpu} />
+          <VMMetric label="r" value={vm.ram} />
+          <VMMetric label="d" value={vm.disk} />
+        </div>
+      )}
     </div>
   );
 }
@@ -1001,7 +984,7 @@ function CategoryTicketsModal({ title, cats, data, initialTab, onClose }) {
           {list.map((tk) => (
             <div key={tk.id} className={"tix-card " + cat.cls}>
               <div className="tix-card-top">
-                <span className="tix-card-date mono">{fmtTicketDate(tk.date)}</span>
+                <span className="tix-card-date mono">#{tk.id} · {fmtTicketDate(tk.date)}</span>
                 <span className="tix-card-area">{tk.area || "General"}</span>
               </div>
               <div className="tix-card-title">{tk.title}</div>
@@ -1053,8 +1036,8 @@ function App() {
     "stationUrl":     "https://playerservices.streamtheworld.com/api/livestream-redirect/ASPEN.mp3",
     "shugoVisionUrl": "http://shugovision.dposs.gob.ar",
     "shugoTimeUrl":   "http://relojes.dposs.gob.ar",
-    "splitPct":       70,
-    "vmMin":          260,
+    "splitPct":       37,
+    "splitPct2":      45,
   });
 
   const audioRef = useRef(null);
@@ -1219,7 +1202,6 @@ function App() {
         <div className="main" style={{
           "--split-left":  `${t.splitPct}fr`,
           "--split-right": `${100 - t.splitPct}fr`,
-          "--vm-min":      `${t.vmMin}px`,
         }}>
           {/* SERVIDORES */}
           <div className="panel">
@@ -1235,7 +1217,7 @@ function App() {
               </div>
             </div>
             <div className="panel-body">
-              <div className="vm-grid">{vms.map(v => <VMCard key={v.name} vm={v} />)}</div>
+              <div className="vm-list">{vms.map(v => <VMRow key={v.name} vm={v} />)}</div>
             </div>
           </div>
 
@@ -1243,7 +1225,7 @@ function App() {
 
           <div className="main-cols">
             {/* RELOJES */}
-            <div className="panel">
+            <div className="panel" style={{ flex: t.splitPct2 }}>
               <div className="panel-head">
                 <div className="panel-title" title="Relojes · ShugoTime"><span className="accent-bar"></span>Relojes</div>
                 <div className="panel-meta">
@@ -1267,7 +1249,9 @@ function App() {
               </div>
             </div>
 
-            <div className="main-right">
+            <Splitter pct={t.splitPct2} onChange={(v) => setTweak("splitPct2", v)} />
+
+            <div className="main-right" style={{ flex: 100 - t.splitPct2 }}>
               {/* TICKETS */}
               <div className="panel tickets-panel">
                 <div className="panel-head">
@@ -1333,7 +1317,7 @@ function TweaksPanel_UI() {
     "dense": false, "stationUrl": "https://ice2.somafm.com/groovesalad-128-mp3",
     "shugoVisionUrl": "http://shugovision.dposs.gob.ar",
     "shugoTimeUrl":   "http://relojes.dposs.gob.ar",
-    "splitPct": 67, "vmMin": 260,
+    "splitPct": 37, "splitPct2": 45,
   });
   const { TweaksPanel, TweakSection, TweakSlider, TweakToggle, TweakText, TweakSelect } = window;
   if (!TweaksPanel) return null;
@@ -1344,8 +1328,8 @@ function TweaksPanel_UI() {
         <TweakText label="ShugoTime URL"   value={t.shugoTimeUrl}   onChange={(v) => setTweak("shugoTimeUrl", v)} />
       </TweakSection>
       <TweakSection title="Layout">
-        <TweakSlider label="División izq/der"    value={t.splitPct} onChange={(v) => setTweak("splitPct", v)} min={20} max={80} step={1} unit="%" />
-        <TweakSlider label="Ancho mín. tarjeta VM" value={t.vmMin} onChange={(v) => setTweak("vmMin", v)}    min={200} max={420} step={10} unit="px" />
+        <TweakSlider label="División servidores/resto" value={t.splitPct}  onChange={(v) => setTweak("splitPct", v)}  min={20} max={80} step={1} unit="%" />
+        <TweakSlider label="División relojes/tickets"  value={t.splitPct2} onChange={(v) => setTweak("splitPct2", v)} min={20} max={80} step={1} unit="%" />
         <TweakToggle label="Modo denso" value={t.dense} onChange={(v) => setTweak("dense", v)} />
       </TweakSection>
       <TweakSection title="Radio">
