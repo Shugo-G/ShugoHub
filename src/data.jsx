@@ -45,11 +45,7 @@ const CLOCKS_MOCK = [
 
 const RADIO_STATIONS = [
   { name: "FM Aspen 102.3",  genre: "clásica · pop", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/ASPEN.mp3" },
-  { name: "Groove Salad",    genre: "ambient", url: "https://ice2.somafm.com/groovesalad-128-mp3" },
-  { name: "Drone Zone",      genre: "ambient", url: "https://ice2.somafm.com/dronezone-128-mp3" },
-  { name: "Lush",            genre: "vocal",   url: "https://ice2.somafm.com/lush-128-mp3" },
-  { name: "Indie Pop Rocks", genre: "indie",   url: "https://ice2.somafm.com/indiepop-128-mp3" },
-  { name: "Bossa Beyond",    genre: "bossa",   url: "https://ice2.somafm.com/bossa-128-mp3" },
+  { name: "LOS40 Argentina", genre: "pop · hits",    url: "https://edge03.radiohdvivo.com/los40" },
 ];
 
 function normalizeVM(v) {
