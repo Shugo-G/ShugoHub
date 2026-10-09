@@ -5,10 +5,13 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+    volumes:
+      - cam-hls:/usr/share/nginx/html/cam:ro
     networks:
       - shugohub-net
     depends_on:
       - ticket-api
+      - camera-gateway
 
   ticket-api:
     build: ./ticket-api
@@ -19,6 +22,20 @@ services:
     networks:
       - shugohub-net
 
+  camera-gateway:
+    build: ./camera-gateway
+    container_name: shugo-camera-gateway
+    restart: unless-stopped
+    environment:
+      - CAMERA_RTSP_URL=${CAMERA_RTSP_URL}
+    volumes:
+      - cam-hls:/hls
+    networks:
+      - shugohub-net
+
 networks:
   shugohub-net:
     driver: bridge
+
+volumes:
+  cam-hls:

@@ -26,6 +26,7 @@ function App() {
   const [ticketsModalTab, setTicketsModalTab] = useState(null);
   const [agents, setAgents] = useState([]);
   const [agentModal, setAgentModal] = useState(null);
+  const [agentsExpanded, setAgentsExpanded] = useState(false);
 
   // Temperatura Ushuaia: actualizar cada 10 min
   useEffect(() => {
@@ -238,19 +239,28 @@ function App() {
                 </div>
               </div>
 
-              {/* AGENTES */}
+              {/* AGENTES / CÁMARA */}
               <div className="panel agents-panel">
                 <div className="panel-head">
-                  <div className="panel-title" title="Agentes · Tickets asignados"><span className="accent-bar"></span>Agentes</div>
+                  <div className="panel-title" title="Agentes · Tickets asignados">
+                    <span className="accent-bar"></span>{agentsExpanded ? "Agentes" : "Cámara"}
+                  </div>
                   <div className="panel-meta">
-                    <span><b className="mono">{agents.length}</b></span>
+                    {agentsExpanded && <span><b className="mono">{agents.length}</b></span>}
+                    <button className="panel-link" onClick={() => setAgentsExpanded((v) => !v)}>
+                      {agentsExpanded ? "Ver cámara" : "Ver agentes"}
+                    </button>
                   </div>
                 </div>
                 <div className="panel-body">
-                  <window.AgentsPanel agents={agents} onOpen={(ag) => {
-                    const first = window.AGENT_CATS.find((c) => ag.counts[c.key] > 0);
-                    setAgentModal({ ...ag, initialTab: first ? first.key : "asignados" });
-                  }} />
+                  {agentsExpanded ? (
+                    <window.AgentsPanel agents={agents} onOpen={(ag) => {
+                      const first = window.AGENT_CATS.find((c) => ag.counts[c.key] > 0);
+                      setAgentModal({ ...ag, initialTab: first ? first.key : "asignados" });
+                    }} />
+                  ) : (
+                    <window.CameraFeed src={window.API_CAM_HLS} />
+                  )}
                 </div>
               </div>
             </div>

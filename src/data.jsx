@@ -4,6 +4,7 @@ const API_VMS      = '/api/vms/';
 const API_HUB      = '/api/hub/';
 const API_TICKETS  = '/api/tickets/';
 const API_ASSIGNED = '/api/tickets/assigned';
+const API_CAM_HLS  = '/api/cam/cam2.m3u8';
 const POLL_VMS_MS      = 30_000;
 const POLL_HUB_MS      = 60_000;
 const POLL_TICKETS_MS  = 30_000;
@@ -89,7 +90,7 @@ function normalizeClock(c) {
 }
 
 Object.assign(window, {
-  API_VMS, API_HUB, API_TICKETS, API_ASSIGNED,
+  API_VMS, API_HUB, API_TICKETS, API_ASSIGNED, API_CAM_HLS,
   POLL_VMS_MS, POLL_HUB_MS, POLL_TICKETS_MS, POLL_ASSIGNED_MS, TICKET_ROTATE_MS,
   VMS_MOCK, CLOCKS_MOCK, RADIO_STATIONS, normalizeVM, normalizeClock,
 });

@@ -232,6 +232,17 @@ body {
 }
 .panel-link:hover { border-color: var(--accent); color: var(--accent); }
 .panel-link svg { width: 11px; height: 11px; }
+button.panel-link { appearance: none; cursor: pointer; font-family: inherit; }
+
+/* ============ Cámara ============ */
+.cam-feed { position: relative; width: 100%; height: 100%; background: #000; border-radius: 8px; overflow: hidden; }
+.cam-feed video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cam-feed-overlay {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 0 16px;
+  font-size: 12px; letter-spacing: 0.08em; color: var(--ink-3);
+  background: rgba(10, 13, 18, 0.7);
+}
 
 /* ============ VM list ============ */
 .vm-list { display: flex; flex-direction: column; height: 100%; overflow-y: auto; }
