@@ -19,7 +19,12 @@ function CameraFeed({ src }) {
       video.src = src;
       video.addEventListener('error', onFatal);
     } else if (window.Hls && window.Hls.isSupported()) {
-      hls = new window.Hls({ liveSyncDurationCount: 3 });
+      hls = new window.Hls({
+        liveSyncDurationCount: 1,
+        liveMaxLatencyDurationCount: 3,
+        maxLiveSyncPlaybackRate: 1.2,
+        backBufferLength: 2,
+      });
       hls.loadSource(src);
       hls.attachMedia(video);
       hls.on(window.Hls.Events.ERROR, (_evt, data) => { if (data.fatal) onFatal(); });
