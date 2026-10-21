@@ -57,10 +57,9 @@ function normalizeVM(v) {
   const disk = parseFloat(s.disk_percent ?? 0) || 0;
 
   const tsRaw = s.timestamp || s.created_at || s.recorded_at || v.last_seen || v.updated_at;
-  const staleByTime = tsRaw ? (Date.now() - new Date(tsRaw).getTime() > 3 * 60 * 1000) : false;
 
   let status = 'online';
-  if (noData || v.is_stale || staleByTime) {
+  if (noData || v.is_stale) {
     status = 'offline';
   } else if (cpu > 80 || ram > 80 || disk > 80) {
     status = 'crit';
