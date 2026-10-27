@@ -1,10 +1,75 @@
 // ── Composición del dashboard: estado, polling de APIs y armado del layout ──
 const { useState, useEffect, useMemo, useRef } = React;
 
+// ── Watchdog: ante un error no manejado (o un render roto), recarga sola la
+// página en vez de quedar en blanco hasta que alguien la note. También hace
+// un refresh preventivo de madrugada para cortar cualquier leak acumulado
+// (ej. horas de video en vivo) antes de que llegue a crashear. ──
+const RELOAD_LOG_KEY = 'shugohub_reload_log';
+const MAX_RELOADS_IN_WINDOW = 3;
+const RELOAD_WINDOW_MS = 2 * 60 * 1000;
+const PREVENTIVE_RELOAD_HOUR = 5; // 05:00, horario de baja actividad
+
+function tooManyReloads() {
+  let log = [];
+  try { log = JSON.parse(sessionStorage.getItem(RELOAD_LOG_KEY) || '[]'); } catch (e) {}
+  const now = Date.now();
+  log = log.filter((ts) => now - ts < RELOAD_WINDOW_MS);
+  const tooMany = log.length >= MAX_RELOADS_IN_WINDOW;
+  log.push(now);
+  try { sessionStorage.setItem(RELOAD_LOG_KEY, JSON.stringify(log)); } catch (e) {}
+  return tooMany;
+}
+
+function reloadSoon(reason) {
+  console.error('[ShugoHub watchdog] ' + reason + ' — recargando en 3s');
+  if (tooManyReloads()) {
+    console.error('[ShugoHub watchdog] demasiados reloads seguidos, dejo de reintentar (error persistente)');
+    return;
+  }
+  setTimeout(() => location.reload(), 3000);
+}
+
+window.addEventListener('error', (e) => reloadSoon('Error: ' + (e.message || e.error)));
+window.addEventListener('unhandledrejection', (e) => {
+  const reason = e.reason && e.reason.message ? e.reason.message : e.reason;
+  reloadSoon('Promise rechazada: ' + reason);
+});
+
+(function schedulePreventiveReload() {
+  const next = new Date();
+  next.setHours(PREVENTIVE_RELOAD_HOUR, 0, 0, 0);
+  if (next.getTime() <= Date.now()) next.setDate(next.getDate() + 1);
+  setTimeout(() => location.reload(), next.getTime() - Date.now());
+})();
+
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error, info) {
+    console.error('[ShugoHub watchdog] Error de render:', error, info.componentStack);
+    reloadSoon('Error de render: ' + error.message);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div style={{ padding: 24, color: "#667", fontFamily: "monospace" }}>Reiniciando…</div>;
+    }
+    return this.props.children;
+  }
+}
+
+function readLocalStorage(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+function writeLocalStorage(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) {}
+}
+
 function App() {
   const [t, setTweak] = window.useTweaks({
     "dense":          false,
-    "stationUrl":     "https://playerservices.streamtheworld.com/api/livestream-redirect/ASPEN.mp3",
+    "stationUrl":     readLocalStorage('shugohub_radio_station')
+      || "https://playerservices.streamtheworld.com/api/livestream-redirect/ASPEN.mp3",
     "shugoVisionUrl": "http://shugovision.dposs.gob.ar",
     "shugoTimeUrl":   "http://relojes.dposs.gob.ar",
     "splitPct":       37,
@@ -12,7 +77,10 @@ function App() {
   });
 
   const audioRef = useRef(null);
-  const [playing, setPlaying] = useState(false);
+  // Si antes de la última recarga la radio estaba sonando, intentamos retomarla sola.
+  // Depende de que el navegador permita autoplay con sonido (kiosk/TV suele tenerlo
+  // habilitado); si el navegador lo bloquea, vuelve a quedar en pausa sin romper nada.
+  const [playing, setPlaying] = useState(() => readLocalStorage('shugohub_radio_playing') === '1');
   const [vol, setVol]         = useState(100);
 
   // -- live API data --
@@ -144,8 +212,15 @@ function App() {
 
   const togglePlay = () => {
     if (!audioRef.current) return;
-    if (playing) { audioRef.current.pause(); setPlaying(false); }
-    else audioRef.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    if (playing) {
+      audioRef.current.pause();
+      setPlaying(false);
+      writeLocalStorage('shugohub_radio_playing', '0');
+    } else {
+      audioRef.current.play()
+        .then(() => { setPlaying(true); writeLocalStorage('shugohub_radio_playing', '1'); })
+        .catch(() => setPlaying(false));
+    }
   };
 
   useEffect(() => { document.body.classList.toggle("dense", !!t.dense); }, [t.dense]);
@@ -166,7 +241,7 @@ function App() {
     <div className="stage-wrap">
       <audio ref={audioRef} preload="none" crossOrigin="anonymous"></audio>
       <div className="stage">
-        <window.TopBar station={station} onStation={(s) => setTweak("stationUrl", s.url)}
+        <window.TopBar station={station} onStation={(s) => { writeLocalStorage('shugohub_radio_station', s.url); setTweak("stationUrl", s.url); }}
           playing={playing} onTogglePlay={togglePlay} vol={vol} onVol={setVol} temp={temp} />
 
         <window.Kpis vms={vms} clocks={clocks} lastCycle={lastCycle} fichadas={fichadas} />
@@ -322,4 +397,4 @@ function TweaksPanel_UI() {
 }
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+root.render(<ErrorBoundary><App /></ErrorBoundary>);
